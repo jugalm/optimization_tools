@@ -148,21 +148,21 @@ class GuessObject:
 
             min_array[i] = [sk_guess[i], internal_guess[0], internal_guess[1], self.f.evalf(subs={x: internal_guess[0],
                                                                                              y: internal_guess[1]})]
-        if (min_array[3][0] < min_array[1][0]) and (min_array[3][3] > min_array[1][3]):
-            min_array = np.delete(min_array, 0, 0)
-            sk_guess = np.delete(sk_guess, 0)
+        if min_array[3][0] < min_array[1][0]:
+            if min_array[3][3] > min_array[1][3]:
+                min_array = np.delete(min_array, 0, 0)
+                sk_guess = np.delete(sk_guess, 0)
+            else:
+                min_array = np.delete(min_array, 2, 0)
+                sk_guess = np.delete(sk_guess, 2)
 
-        elif (min_array[3][0] < min_array[1][0]) and (min_array[3][3] < min_array[1][3]):
-            min_array = np.delete(min_array, 2, 0)
-            sk_guess = np.delete(sk_guess, 2)
-
-        elif (min_array[3][0] > min_array[1][0]) and (min_array[3][3] < min_array[1][3]):
-            min_array = np.delete(min_array, 0, 0)
-            sk_guess = np.delete(sk_guess, 0)
-
-        else:
-            min_array = np.delete(min_array, 2, 0)
-            sk_guess = np.delete(sk_guess, 2)
+        elif min_array[3][0] > min_array[1][0]:
+            if min_array[3][3] < min_array[1][3]:
+                min_array = np.delete(min_array, 0, 0)
+                sk_guess = np.delete(sk_guess, 0)
+            else:
+                min_array = np.delete(min_array, 2, 0)
+                sk_guess = np.delete(sk_guess, 2)
 
         sk_guess.sort()
 
