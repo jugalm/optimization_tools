@@ -103,19 +103,21 @@ def quasi_newtons_method(n=0, e=1.0, delta=1, guess=[1.5, 1], f=100*(y-x**2)**2 
 
 class GuessObject:
 
-    def __init__(self, guess=[-10.0, 10.0], f=100*(y-x**2)**2 + (1 - x)**2):
+    def __init__(self, guess=[2., 1], f=100*(y-x**2)**2 + (1 - x)**2, hess=None):
 
         self.guess = guess
         self.f = f
         self.gradient = [sp.diff(f, x).evalf(subs={x: guess[0], y: guess[1]}),
                          sp.diff(f, y).evalf(subs={x: guess[0], y: guess[1]})]
+        if hess is None:
+            self.hess = [[round(sp.diff(f, x, x).evalf(subs={x: guess[0], y: guess[1]}), 2),
+                          round(sp.diff(f, x, y).evalf(subs={x: guess[0], y: guess[1]}), 2)],
 
-        self.hess = [[round(sp.diff(f, x, x).evalf(subs={x: guess[0], y: guess[1]}), 2),
-                      round(sp.diff(f, x, y).evalf(subs={x: guess[0], y: guess[1]}), 2)],
-
-                     [round(sp.diff(f, y, x).evalf(subs={x: guess[0], y: guess[1]}), 2),
-                      round(sp.diff(f, y, y).evalf(subs={x: guess[0], y: guess[1]}), 2)]
-                     ]
+                         [round(sp.diff(f, y, x).evalf(subs={x: guess[0], y: guess[1]}), 2),
+                          round(sp.diff(f, y, y).evalf(subs={x: guess[0], y: guess[1]}), 2)]
+                         ]
+        else:
+            self.hess = hess
 
     def newtons_method(self, e=1.0, delta=1.0):
         print self.guess
@@ -188,11 +190,40 @@ class GuessObject:
 
             return guess_new_obj.newtons_line_search_method(e=e, delta=delta)
 
+    def bfgs_method(self, e=1.0, delta=1.0):
+
+        print self.guess
+
+        print self.hess
+        if (e < 0.0001) and (delta < 0.0001):
+            guess = [round(self.guess[0]), round(self.guess[1])]
+            return guess
+
+        else:
+            delta = np.abs(self.gradient[0]) + np.abs(self.gradient[1])
+            guess_new = self.guess - inv(np.array(self.hess)).dot(np.array(self.gradient).transpose())
+            guess_new_obj = GuessObject(guess=guess_new, f=self.f, hess=[[0, 0], [0, 0]])
+            e = np.maximum(np.abs(self.guess[0] - guess_new[0]), np.abs(self.guess[1] - guess_new[1]))
+
+            z_k = np.array(guess_new_obj.guess - self.guess)
+            y_k = np.array(guess_new_obj.gradient) - np.array(self.gradient)
+
+            mid_term = np.array(self.hess).dot(z_k) * (z_k.transpose()).dot(np.array(self.hess)) / \
+                       z_k.transpose().dot(np.array(self.hess)).dot(z_k)
+
+            new_hess = self.hess - mid_term + (y_k.dot(y_k.transpose()) / y_k.transpose().dot(z_k))
+
+            a = np.round(np.array(new_hess, dtype=np.float32))
+            for i in range(0, 2):
+                guess_new_obj.hess[i][0] = a[i][0]
+                guess_new_obj.hess[i][1] = a[i][1]
+
+            return guess_new_obj.bfgs_method(e=e, delta=delta)
 
 if __name__ == '__main__':
 
     new1 = GuessObject()
-    print new1.newtons_line_search_method()
+    print simplex_method()
 
     # print newtons_line_search_method()
 
