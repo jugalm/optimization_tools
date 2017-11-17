@@ -22,7 +22,7 @@ def simplex_method(n=0, e=1.0, guess=np.array([[2.0, 2.0, 0.0], [5.0, 5.0, 0], [
             guess[i][2] = f.evalf(subs={x: guess[i][0], y: guess[i][1]})
 
     if e < 0.000001:
-        print("From simplex method. Number of iteration: " + str(n))
+        print("Simplex/ Polytope method. Number of iteration: " + str(n))
         print("Maximizing values")
         return np.round(guess[0][0:2], 2)
 
@@ -87,7 +87,7 @@ class GuessObject:
 
         if (e < 0.000001) and (delta < 0.000001):
             result = [round(self.guess[0], 2), round(self.guess[1], 2)]
-            print("From  newtowns method. Number of iteration: " + str(n))
+            print("Newtons method. Number of iteration: " + str(n))
             print("Maximizing values")
             return result
         else:
@@ -143,7 +143,7 @@ class GuessObject:
 
         if (e < 0.0001) and (delta < 0.0001):
             result = [round(self.guess[0], 2), round(self.guess[1], 2)]
-            print("From  newtowns method with line search. Number of iteration: " + str(n))
+            print("Newtons method with line search. Number of iteration: " + str(n))
             print("Maximizing values")
             return result
 
@@ -155,14 +155,13 @@ class GuessObject:
 
             return guess_new_obj.newtons_line_search_method(e=e, delta=delta, n=n+1)
 
-    def bfgs_method(self, e=1.0, delta=1.0):
+    def bfgs_method(self, e=1.0, delta=1.0, n=0):
 
-        print self.guess
-
-        print self.hess
         if (e < 0.0001) and (delta < 0.0001):
-            guess = [round(self.guess[0]), round(self.guess[1])]
-            return guess
+            result = [round(self.guess[0], 2), round(self.guess[1], 2)]
+            print("BFGS method with line search. Number of iteration: " + str(n))
+            print("Maximizing values")
+            return result
 
         else:
             delta = np.abs(self.gradient[0]) + np.abs(self.gradient[1])
@@ -183,7 +182,7 @@ class GuessObject:
                 guess_new_obj.hess[i][0] = a[i][0]
                 guess_new_obj.hess[i][1] = a[i][1]
 
-            return guess_new_obj.bfgs_method(e=e, delta=delta)
+            return guess_new_obj.bfgs_method(e=e, delta=delta, n=n+1)
 
 if __name__ == '__main__':
     simplex_guess = np.array([[2.0, 2.0, 0.0], [5.0, 5.0, 0], [-3.0, -3.0, 0.0]])
