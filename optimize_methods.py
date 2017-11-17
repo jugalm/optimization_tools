@@ -22,8 +22,9 @@ def simplex_method(n=0, e=1.0, guess=np.array([[2.0, 2.0, 0.0], [5.0, 5.0, 0], [
             guess[i][2] = f.evalf(subs={x: guess[i][0], y: guess[i][1]})
 
     if e < 0.000001:
-        # guess = [round(guess[0]), round(guess[1])]
-        return np.round(guess, 2), n
+        print("From simplex method. Number of iteration: " + str(n))
+        print("Maximizing values")
+        return np.round(guess[0][0:2], 2)
 
     else:
         guess = guess[guess[:, 2].argsort()]
@@ -64,46 +65,9 @@ def simplex_method(n=0, e=1.0, guess=np.array([[2.0, 2.0, 0.0], [5.0, 5.0, 0], [
         return simplex_method(n=n, e=e, guess=guess, f=f)
 
 
-def quasi_newtons_method(n=0, e=1.0, delta=1, guess=[1.5, 1], f=100*(y-x**2)**2 + (1 - x)**2, approx_hess=[[0, 0], [0, 0]]):
-    if n == 0:
-        approx_hess = [[round(sp.diff(f, x, x).evalf(subs={x: guess[0], y: guess[1]}), 2),
-                        round(sp.diff(f, x, y).evalf(subs={x: guess[0], y: guess[1]}), 2)],
-                       [round(sp.diff(f, y, x).evalf(subs={x: guess[0], y: guess[1]}), 2),
-                        round(sp.diff(f, y, y).evalf(subs={x: guess[0], y: guess[1]}), 2)]
-                       ]
-
-    print guess
-    if (e < 0.1) and (delta < 0.1):
-        guess = [round(guess[0]), round(guess[1])]
-        return guess
-
-    else:
-
-        gradient = [round(sp.diff(f, x).evalf(subs={x: guess[0], y: guess[1]}), 2),
-                    round(sp.diff(f, y).evalf(subs={x: guess[0], y: guess[1]}), 2)]
-
-        guess_new = guess - inv(np.array(approx_hess)).dot(np.array(gradient).transpose())
-
-        delta = np.abs(gradient[0]) + np.abs(gradient[1])
-
-        gradient_new = [round(sp.diff(f, x).evalf(subs={x: guess[0], y: guess_new[1]}), 2),
-                        round(sp.diff(f, y).evalf(subs={x: guess[0], y: guess_new[1]}), 2)]
-
-        s_k = np.array(guess_new) - np.array(guess_new)
-        y_k = np.array(gradient_new) - np.array(gradient)
-
-        approx_hess = np.array(approx_hess) + (s_k - np.array(approx_hess).dot(y_k)).transpose().dot(s_k - np.array(approx_hess).dot(y_k)) / (s_k - np.array(approx_hess).dot(y_k))
-
-        e = np.maximum(np.abs(guess[0] - guess_new[0]), np.abs(guess[1] - guess_new[1]))
-
-        guess_new = guess - inv(np.array(approx_hess)).dot(np.array(gradient).transpose())
-        n = n + 1
-        return quasi_newtons_method(n=n, e=e, delta=delta, guess=guess_new, f=f, approx_hess=approx_hess)
-
-
 class GuessObject:
 
-    def __init__(self, guess=[2., 1], f=100*(y-x**2)**2 + (1 - x)**2, hess=None):
+    def __init__(self, guess=[2., 1.], f=100*(y-x**2)**2 + (1 - x)**2, hess=None):
 
         self.guess = guess
         self.f = f
@@ -119,11 +83,12 @@ class GuessObject:
         else:
             self.hess = hess
 
-    def newtons_method(self, e=1.0, delta=1.0):
-        print self.guess
+    def newtons_method(self, e=1.0, delta=1.0, n=0):
 
         if (e < 0.000001) and (delta < 0.000001):
             result = [round(self.guess[0], 2), round(self.guess[1], 2)]
+            print("From  newtowns method. Number of iteration: " + str(n))
+            print("Maximizing values")
             return result
         else:
 
@@ -132,7 +97,7 @@ class GuessObject:
             guess_new_obj = GuessObject(guess=guess_new, f=self.f)
             e = np.maximum(np.abs(self.guess[0] - guess_new[0]), np.abs(self.guess[1] - guess_new[1]))
 
-            return guess_new_obj.newtons_method(e=e, delta=delta)
+            return guess_new_obj.newtons_method(e=e, delta=delta, n=n+1)
 
     def min_line_search(self, sk_guess):
 
@@ -174,13 +139,13 @@ class GuessObject:
         else:
             return self.min_line_search(sk_guess=sk_guess.tolist())
 
-    def newtons_line_search_method(self, e=1.0, delta=1.0):
-
-        print self.guess
+    def newtons_line_search_method(self, e=1.0, delta=1.0, n=0):
 
         if (e < 0.0001) and (delta < 0.0001):
-            guess = [round(self.guess[0]), round(self.guess[1])]
-            return guess
+            result = [round(self.guess[0], 2), round(self.guess[1], 2)]
+            print("From  newtowns method with line search. Number of iteration: " + str(n))
+            print("Maximizing values")
+            return result
 
         else:
             delta = np.abs(self.gradient[0]) + np.abs(self.gradient[1])
@@ -188,7 +153,7 @@ class GuessObject:
             guess_new_obj = GuessObject(guess=guess_new, f=self.f)
             e = np.maximum(np.abs(self.guess[0] - guess_new[0]), np.abs(self.guess[1] - guess_new[1]))
 
-            return guess_new_obj.newtons_line_search_method(e=e, delta=delta)
+            return guess_new_obj.newtons_line_search_method(e=e, delta=delta, n=n+1)
 
     def bfgs_method(self, e=1.0, delta=1.0):
 
@@ -221,10 +186,18 @@ class GuessObject:
             return guess_new_obj.bfgs_method(e=e, delta=delta)
 
 if __name__ == '__main__':
+    simplex_guess = np.array([[2.0, 2.0, 0.0], [5.0, 5.0, 0], [-3.0, -3.0, 0.0]])
 
-    new1 = GuessObject()
-    print simplex_method()
+    print(simplex_method(guess=simplex_guess))
 
-    # print newtons_line_search_method()
+    newton_guess = [3., 4.]
+
+    new_guess_object = GuessObject(guess=newton_guess)
+    print(" ")
+    print(new_guess_object.newtons_method())
+
+    print(" ")
+    print(new_guess_object.newtons_line_search_method())
+
 
 
