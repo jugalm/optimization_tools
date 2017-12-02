@@ -1,3 +1,8 @@
+'''
+Jugal Marfatia
+Methods to optimize two variable functions
+'''
+
 import numpy as np
 import sympy as sp
 from numpy.linalg import inv
