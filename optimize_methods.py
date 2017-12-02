@@ -23,7 +23,7 @@ def simplex_method(n=0, e=1.0, guess=np.array([[2.0, 2.0, 0.0], [5.0, 5.0, 0], [
 
     if e < 0.000001:
         print("Simplex/ Polytope method. Number of iteration: " + str(n))
-        print("Maximizing values")
+        print("Minimizing values")
         return np.round(guess[0][0:2], 2)
 
     else:
@@ -34,7 +34,6 @@ def simplex_method(n=0, e=1.0, guess=np.array([[2.0, 2.0, 0.0], [5.0, 5.0, 0], [
             guess_copy = guess.copy()
             guess_copy = np.delete(guess_copy, i, 0)
             reflection[i] = (2 * guess[i] - np.mean(guess_copy, axis=0))
-
             reflection[i][2] = f.evalf(subs={x: reflection[i][0], y: reflection[i][1]})
 
         reflection_diff = []
@@ -88,11 +87,12 @@ class GuessObject:
         if (e < 0.000001) and (delta < 0.000001):
             result = [round(self.guess[0], 2), round(self.guess[1], 2)]
             print("Newtons method. Number of iteration: " + str(n))
-            print("Maximizing values")
+            print("Minimizing values")
             return result
         else:
-
-            delta = np.abs(self.gradient[0]) + np.abs(self.gradient[1])
+            delta = 0
+            for i in range(0, len(self.gradient)):
+                delta += np.abs(self.gradient[i])
             guess_new = self.guess - inv(np.array(self.hess)).dot(np.array(self.gradient).transpose())
             guess_new_obj = GuessObject(guess=guess_new, f=self.f)
             e = np.maximum(np.abs(self.guess[0] - guess_new[0]), np.abs(self.guess[1] - guess_new[1]))
@@ -140,11 +140,11 @@ class GuessObject:
             return self.min_line_search(sk_guess=sk_guess.tolist())
 
     def newtons_line_search_method(self, e=1.0, delta=1.0, n=0):
-
+        print self.guess
         if (e < 0.0001) and (delta < 0.0001):
             result = [round(self.guess[0], 2), round(self.guess[1], 2)]
             print("Newtons method with line search. Number of iteration: " + str(n))
-            print("Maximizing values")
+            print("Minimizing values")
             return result
 
         else:
@@ -160,7 +160,7 @@ class GuessObject:
         if (e < 0.0001) and (delta < 0.0001):
             result = [round(self.guess[0], 2), round(self.guess[1], 2)]
             print("BFGS method with line search. Number of iteration: " + str(n))
-            print("Maximizing values")
+            print("Minimizing values")
             return result
 
         else:
@@ -189,7 +189,7 @@ if __name__ == '__main__':
 
     print(simplex_method(guess=simplex_guess))
 
-    newton_guess = [3., 4.]
+    newton_guess = [-10., 10.]
 
     new_guess_object = GuessObject(guess=newton_guess)
     print(" ")
@@ -197,6 +197,10 @@ if __name__ == '__main__':
 
     print(" ")
     print(new_guess_object.newtons_line_search_method())
+
+    # new_guess_object = GuessObject(guess=newton_guess, hess=[[1, 0], [0, 1]])
+    # print(" ")
+    # print(new_guess_object.bfgs_method())
 
 
 
