@@ -1,4 +1,4 @@
-# Optimization Tools
+# Optimization Tools.
 Two variable optimization methods.
 1. Simplex (Polytope Method)
 2. Newton's Method
